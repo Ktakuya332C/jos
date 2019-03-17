@@ -3,9 +3,12 @@ CFLAGS += -Wall
 CFLAGS += -I.
 
 .PHONY: all clean
-all: build/boot
+all: build/image
 clean:
 	rm build/*
+
+build/image: build/boot build/kernel
+	cat $^ > $@
 
 build/boot: build/boot.o build/main.o
 	# bootloader will be loaded at 0x7c00
@@ -23,4 +26,10 @@ build/boot.o: boot/boot.S
 # Otherwise the size of the bootloader exceeds 512 bytes
 build/main.o: boot/main.c
 	gcc $(CFLAGS) -Os -o $@ -c $^
+
+build/kernel: build/entry.o
+	ld -Ttext 0x100000 -o $@ $^
+
+build/entry.o: kern/entry.S
+	as -o $@ $^
 
