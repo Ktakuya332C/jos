@@ -20,7 +20,7 @@ build/boot: build/boot.o build/main.o
 	perl boot/sign.pl $@
 
 build/boot.o: boot/boot.S
-	as -o $@ $^
+	gcc $(CFLAGS) -o $@ -c $^
 
 # It is necessay to add -Os option.
 # Otherwise the size of the bootloader exceeds 512 bytes
@@ -31,5 +31,5 @@ build/kernel: build/entry.o
 	ld -Ttext 0x100000 -o $@ $^
 
 build/entry.o: kern/entry.S
-	as -o $@ $^
+	gcc $(CFLAGS) -o $@ -c $^
 
