@@ -16,4 +16,7 @@ typedef int32_t intptr_t; // Virtual Address
 typedef uint32_t uintptr_t; // Virtual Address
 typedef uint32_t physaddr_t; // Physical Address
 
+// size_t is used for memory object sizes.
+typedef uint32_t size_t;
+
 #endif // INC_TYPES_H
