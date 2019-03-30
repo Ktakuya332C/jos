@@ -27,8 +27,8 @@ build/boot.o: boot/boot.S
 build/main.o: boot/main.c
 	gcc $(CFLAGS) -Os -o $@ -c $^
 
-build/kernel: build/entry.o
-	ld -Ttext 0x100000 -o $@ $^
+build/kernel: build/entry.o kern/kernel.ld
+	ld -T kern/kernel.ld -nostdlib -o $@ $^
 
 build/entry.o: kern/entry.S
 	gcc $(CFLAGS) -o $@ -c $^
