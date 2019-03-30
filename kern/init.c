@@ -1,6 +1,6 @@
 #include <inc/string.h>
 
-int mem_init = 0;
+int mem_init = 0xffffffff;
 
 void i386_init(void) {
   extern char edata[], end[];
