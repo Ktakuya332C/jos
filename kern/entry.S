@@ -20,4 +20,16 @@ entry:
   jmp *%eax
 
 relocated:
-  jmp relocated
+  movl $(bootstacktop), %esp
+  call i386_init
+
+spin:
+  jmp spin
+
+.data
+  .p2align PGSHIFT
+  .global bootstack
+bootstack:
+  .space KSTKSIZE
+  .global bootstacktop
+bootstacktop:

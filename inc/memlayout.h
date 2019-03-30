@@ -3,9 +3,11 @@
 
 #ifndef __ASSEMBLER__
 #include <inc/types.h>
+#include <inc/mmu.h>
 #endif // __ASSEMBLER__
 
 #define KERNBASE 0xF0000000
+#define KSTKSIZE (8*PGSIZE) // Kernel STacK SIZE
 
 #ifndef __ASSEMBLER__
 typedef uint32_t pte_t;
