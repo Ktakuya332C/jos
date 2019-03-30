@@ -11,4 +11,9 @@ typedef unsigned int uint32_t;
 typedef long long int64_t;
 typedef unsigned long long uint64_t;
 
+// Pointer types
+typedef int32_t intptr_t; // Virtual Address
+typedef uint32_t uintptr_t; // Virtual Address
+typedef uint32_t physaddr_t; // Physical Address
+
 #endif // INC_TYPES_H
