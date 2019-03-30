@@ -27,9 +27,12 @@ build/boot.o: boot/boot.S
 build/main.o: boot/main.c
 	gcc $(CFLAGS) -Os -o $@ -c $^
 
-build/kernel: build/entry.o kern/kernel.ld
+build/kernel: build/entry.o build/entrypgdir.o kern/kernel.ld
 	ld -T kern/kernel.ld -nostdlib -o $@ $^
 
 build/entry.o: kern/entry.S
+	gcc $(CFLAGS) -o $@ -c $^
+
+build/entrypgdir.o: kern/entrypgdir.c
 	gcc $(CFLAGS) -o $@ -c $^
 
