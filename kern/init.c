@@ -11,9 +11,9 @@ void i386_init(void) {
   cons_init();
   
   // Input character A or B, and print it out
-  int c = 0;
-  while((c=cons_getc()) == 0);
-  cons_putc(c);
-  
-  while(1);
+  while(1) {
+    int c = 0;
+    while((c=cons_getc()) == 0);
+    cons_putc(c);
+  }
 }
