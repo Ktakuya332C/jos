@@ -10,9 +10,10 @@ void i386_init(void) {
   // Initialize the console
   cons_init();
   
-  // Put characters A and B
-  cons_putc(0x41);
-  cons_putc(0x42);
+  // Input character A or B, and print it out
+  int c = 0;
+  while((c=cons_getc()) == 0);
+  cons_putc(c);
   
   while(1);
 }
