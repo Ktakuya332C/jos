@@ -6,5 +6,6 @@
 
 void cons_init(void);
 void cons_putc(int c);
+int cons_getc(void);
 
 #endif // KERN_CONSOLE_H
