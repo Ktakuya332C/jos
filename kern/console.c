@@ -278,3 +278,9 @@ int cons_getc(void) {
   }
   return 0;
 }
+
+/**** High level console IO ****/
+
+void cputchar(int c) {
+  cons_putc(c);
+}

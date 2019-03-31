@@ -1,13 +1,15 @@
 # Makefile fragment to specify the build steps of build/kern/kernel
 
+GCC_LIB := $(shell gcc -print-libgcc-file-name)
+
 KERN_SRCFILES := kern/entry.S kern/entrypgdir.c kern/init.c \
-  kern/console.c lib/string.c
+  kern/console.c kern/printf.c lib/string.c lib/printfmt.c
 KERN_OBJFILES := $(patsubst %.c, build/%.o, $(KERN_SRCFILES))
 KERN_OBJFILES := $(patsubst %.S, build/%.o, $(KERN_OBJFILES))
 KERN_OBJFILES := $(patsubst build/lib/%, build/kern/%, $(KERN_OBJFILES))
 
 build/kern/kernel: $(KERN_OBJFILES) kern/kernel.ld
-	ld -T kern/kernel.ld -nostdlib -o $@ $^
+	ld -T kern/kernel.ld -m elf_i386 -nostdlib -o $@ $^ $(GCC_LIB)
 
 build/kern/%.o: kern/%.S
 	@mkdir -p build/kern
@@ -18,6 +20,6 @@ build/kern/%.o: kern/%.c
 	gcc $(CFLAGS) -o $@ -c $^
 
 build/kern/%.o: lib/%.c
-	@mkdir -p build/lib
+	@mkdir -p build/kern
 	gcc $(CFLAGS) -o $@ -c $^
 
