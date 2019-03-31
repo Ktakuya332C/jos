@@ -1,4 +1,4 @@
-CFLAGS := -ffreestanding
+CFLAGS := -ffreestanding -std=gnu99 -static
 CFLAGS += -Wall
 CFLAGS += -I.
 
