@@ -58,6 +58,7 @@ static int kbd_proc_data(void) {
   return 0;
 }
 
+// Read all characters that were not yet read into the console buffer
 void kbd_intr(void) {
   cons_intr(kbd_proc_data);
 }
@@ -74,7 +75,7 @@ static struct {
 } cons;
 
 // Store input data read by `proc` to the console buffer `buf`
-// `buf` is a circular buffer and can store CONSBUFSIZE bytes.
+// `buf` is a circular buffer that stores the maximum of CONSBUFSIZE bytes.
 void cons_intr(int (*proc)(void)) {
   int c;
   while ((c=(*proc)()) != -1) {
@@ -93,6 +94,8 @@ void cons_putc(int c) {
   cga_putc(c);
 }
 
+// Read all characters that were not read yet to the console buffer
+// and returns the first one character from the buffer.
 int cons_getc(void) {
   kbd_intr();
   int c;
