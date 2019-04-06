@@ -115,10 +115,12 @@ void vprintfmt(void (*putch)(int, void*), void* putdat, const char* fmt, va_list
       lflag++;
       goto reswitch;
     
+    // character
     case 'c':
       putch(va_arg(ap, int), putdat);
       break;
     
+    // error message
     case 'e':
       err = va_arg(ap, int);
       if (err < 0) err = -err;
@@ -136,16 +138,16 @@ void vprintfmt(void (*putch)(int, void*), void* putdat, const char* fmt, va_list
         for (width -= strnlen(p, precision); width > 0; width--) {
           putch(padc, putdat);
         }
-        for (; (ch=*p++) != '\0' && (precision < 0 || --precision >= 0); width--) {
-          if (altflag && (ch < ' ' || ch > '~')) {
-            putch('?', putdat);
-          } else {
-            putch(ch, putdat);
-          }
-        }
-        for (; width>0; width--) putch(' ', putdat);
-        break;
       }
+      for (; (ch=*p++) != '\0' && (precision < 0 || --precision >= 0); width--) {
+        if (altflag && (ch < ' ' || ch > '~')) {
+          putch('?', putdat);
+        } else {
+          putch(ch, putdat);
+        }
+      }
+      for (; width>0; width--) putch(' ', putdat);
+      break;
       
     // (signed) decimal
     case 'd':

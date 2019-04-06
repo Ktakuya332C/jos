@@ -11,6 +11,7 @@ void i386_init(void) {
   // Initialize the console
   cons_init();
   
+  char *str = readline("K> ");
   // Output string as a test
-  cprintf("This is one: %d", 1);
+  cprintf("Input was %s", str);
 }
