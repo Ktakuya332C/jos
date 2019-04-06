@@ -7,6 +7,7 @@ SECTIONS {
   .text : AT(0x100000) {
     *(.text .text.* .gnu.linkonce.t.*)
   }
+  PROVIDE(etext = .);
   .rodate : {
     *(.rodate .rodate.* .gnu.linkonce.r.*)
   }

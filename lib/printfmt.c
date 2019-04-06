@@ -64,7 +64,6 @@ void vprintfmt(void (*putch)(int, void*), void* putdat, const char* fmt, va_list
     altflag = 0;
   reswitch:
     switch(ch = *(unsigned char*)fmt++) {
-    
     // flag to pad on the right
     case '-':
       padc = '-';
@@ -87,6 +86,7 @@ void vprintfmt(void (*putch)(int, void*), void* putdat, const char* fmt, va_list
     case '9':
       for (precision = 0; ; ++fmt) {
         precision = precision * 10 + ch - '0';
+        ch = *fmt;
         if (ch < '0' || ch > '9') break;
       }
       goto process_precision;
