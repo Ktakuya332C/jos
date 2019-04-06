@@ -1,6 +1,7 @@
 #include <kern/monitor.h>
 #include <inc/stdio.h>
 #include <inc/string.h>
+#include <inc/memlayout.h>
 
 struct Command {
   const char *name;
@@ -9,7 +10,8 @@ struct Command {
 };
 
 static struct Command commands[] = {
-  {"help", "Display this list of commands", mon_help}
+  {"help", "Display this list of commands", mon_help},
+  {"kerninfo", "Display infomation about the kernel", mon_kerninfo},
 };
 
 /**** Implementation of basic kernel monitor commands ****/
@@ -18,6 +20,17 @@ int mon_help(int argc, char **argv, struct Trapframe *tf) {
   for (int i=0; i<ARRAY_SIZE(commands); i++) {
     cprintf("%s - %s\n", commands[i].name, commands[i].desc);
   }
+  return 0;
+}
+
+int mon_kerninfo(int argc, char **argv, struct Trapframe *tf) {
+  extern char _start[], entry[], etext[], edata[], end[];
+  cprintf("Special kernel symbols:\n");
+  cprintf(" _start                 %08x (phys)\n", _start);
+  cprintf(" entry  %08x (virt) %08x (phys)\n", entry, entry - KERNBASE);
+  cprintf(" etext  %08x (virt) %08x (phys)\n", etext, etext - KERNBASE);
+  cprintf(" edata  %08x (virt) %08x (phys)\n", edata, edata - KERNBASE);
+  cprintf(" end    %08x (virt) %08x (phys)\n", end, end - KERNBASE);
   return 0;
 }
 
