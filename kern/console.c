@@ -284,3 +284,13 @@ int cons_getc(void) {
 void cputchar(int c) {
   cons_putc(c);
 }
+
+int getchar(void) {
+  int c;
+  while((c=cons_getc()) == 0);
+  return c;
+}
+
+int iscons(int fdnum) {
+  return 1;
+}
