@@ -19,4 +19,6 @@ typedef uint32_t physaddr_t; // Physical Address
 // size_t is used for memory object sizes.
 typedef uint32_t size_t;
 
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+
 #endif // INC_TYPES_H

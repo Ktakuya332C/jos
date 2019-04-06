@@ -12,6 +12,18 @@ int strnlen(const char* s, size_t size) {
   return n;
 }
 
+int strcmp(const char *p, const char *q) {
+  while(*p & (*p == *q)) p++, q++;
+  return (int)((unsigned char)*p - (unsigned char)*q);
+}
+
+char* strchr(const char *s, char c) {
+  for (; *s; s++) {
+    if (*s == c) return (char*)s;
+  }
+  return 0;
+}
+
 void* memset(void* v, int c, size_t n) {
   char* p;
   int m;

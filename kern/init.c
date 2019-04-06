@@ -1,6 +1,7 @@
 #include <inc/string.h>
 #include <inc/stdio.h>
 #include <kern/console.h>
+#include <kern/monitor.h>
 
 void i386_init(void) {
   extern char edata[], end[];
@@ -11,7 +12,6 @@ void i386_init(void) {
   // Initialize the console
   cons_init();
   
-  char *str = readline("K> ");
-  // Output string as a test
-  cprintf("Input was %s", str);
+  // Drop into the kernel monitor
+  while(1) monitor(NULL);
 }
