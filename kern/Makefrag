@@ -3,7 +3,8 @@
 GCC_LIB := $(shell gcc -print-libgcc-file-name)
 
 KERN_SRCFILES := kern/entry.S kern/entrypgdir.c kern/init.c \
-  kern/console.c kern/printf.c lib/string.c lib/printfmt.c lib/readline.c
+  kern/console.c kern/printf.c kern/monitor.c \
+	lib/string.c lib/printfmt.c lib/readline.c
 KERN_OBJFILES := $(patsubst %.c, build/%.o, $(KERN_SRCFILES))
 KERN_OBJFILES := $(patsubst %.S, build/%.o, $(KERN_OBJFILES))
 KERN_OBJFILES := $(patsubst build/lib/%, build/kern/%, $(KERN_OBJFILES))
