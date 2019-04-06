@@ -115,10 +115,12 @@ void vprintfmt(void (*putch)(int, void*), void* putdat, const char* fmt, va_list
       lflag++;
       goto reswitch;
     
+    // character
     case 'c':
       putch(va_arg(ap, int), putdat);
       break;
     
+    // error message
     case 'e':
       err = va_arg(ap, int);
       if (err < 0) err = -err;
