@@ -6,7 +6,7 @@ unsigned mc146818_read(unsigned reg) {
   return inb(IO_RTC+1);
 }
 
-void mc156818_write(unsigned reg, unsigned datum) {
+void mc146818_write(unsigned reg, unsigned datum) {
   outb(IO_RTC, reg);
   outb(IO_RTC+1, datum);
 }
