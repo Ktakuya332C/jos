@@ -41,4 +41,8 @@ static void i386_detect_memory(void) {
 void mem_init(void) {
   // Find out how much memory the machine has
   i386_detect_memory();
+  
+  warn("Warn in mem_init function");
+  panic("Panic in mem_init function");
+  
 }
