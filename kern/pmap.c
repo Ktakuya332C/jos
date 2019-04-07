@@ -30,10 +30,10 @@ static void i386_detect_memory(void) {
   npages = totalmem / (PGSIZE / 1024);
   npages_basemem = basemem / (PGSIZE / 1024);
   
-  cprintf("Availabe physical memory sizes\n");
-  cprintf("-- Total memory   : %uKB\n", totalmem);
-  cprintf("-- Base memory    : %uKB\n", basemem);
-  cprintf("-- Extended memory: %uKB\n", totalmem - basemem);
+  cprintf("Available physical memory sizes\n");
+  cprintf("-- Total memory   : %uKiB\n", totalmem);
+  cprintf("-- Base memory    : %uKiB\n", basemem);
+  cprintf("-- Extended memory: %uKiB\n", totalmem - basemem);
 }
 
 /**** Set up memory mappings above UTOP ****/
