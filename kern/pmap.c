@@ -69,5 +69,8 @@ void mem_init(void) {
   kern_pgdir = (pde_t*)boot_alloc(PGSIZE);
   memset(kern_pgdir, 0, PGSIZE);
   
+  // Recursively insert the page directory in itself as a page table
+  kern_pgdir[PDX[UVPT]] = PADDR(kern_pgdir) | PTE_U | PTE_P;
+  
   panic("Panic in mem_init function");
 }
