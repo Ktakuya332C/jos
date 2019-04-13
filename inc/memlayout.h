@@ -31,7 +31,7 @@
 #define MMIOLIM (KSTACKTOP - PTSIZE)
 #define MMIOBASE (MMIOLIM - PTSIZE)
 
-#define ULIM (MMBIOBASE)
+#define ULIM (MMIOBASE)
 #define UVPT (ULIM - PTSIZE) // User read-only virtual page table
 #define UPAGES (UVPT - PTSIZE) // Read-only copies of the Page structures
 #define UENVS (UPAGES - PTSIZE) // Read-only copies of the global env structures
