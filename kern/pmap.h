@@ -4,10 +4,12 @@
 #include <inc/memlayout.h>
 #include <inc/assert.h>
 
+extern size_t npages;
+
 // This macro takes a kernel virtual address
 // and returns the corresponding physical address
 #define PADDR(kva) _paddr(__FILE__, __LINE__, kva)
-static inline phyaddr_t _paddr(const char *file, int line, void *kva) {
+static inline physaddr_t _paddr(const char *file, int line, void *kva) {
   if ((uint32_t)kva < KERNBASE) {
     _panic(file, line, "PADDR called with invalid kva %08lx", kva);
   }
