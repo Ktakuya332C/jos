@@ -67,7 +67,7 @@ void mem_init(void) {
   
   // Create initial page directory
   kern_pgdir = (pde_t*)boot_alloc(PGSIZE);
-  memset(kern_pgdir, 0, PGSIZE);
+  memset(kern_pgdir, 10, PGSIZE);
   
   panic("Panic in mem_init function");
 }
