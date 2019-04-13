@@ -1,9 +1,13 @@
 #include <kern/pmap.h>
+#include <inc/string.h>
 #include <kern/kclock.h>
 
 // These variables are set by i386_detect_memory()
 size_t npages; // The amount of physical memory (in pages)
 static size_t npages_basemem; // The amount of base memory (in pages)
+
+// These variables are set in mem_init()
+pde_t *kern_pgdir; // Kernel's initial page directory
 
 /**** Detect machine's physical memory setup ****/
 
@@ -38,11 +42,32 @@ static void i386_detect_memory(void) {
 
 /**** Set up memory mappings above UTOP ****/
 
+// Simple physical memory allocator used
+// only while JOS is setting up its virtual memory system
+static void* boot_alloc(uint32_t n) {
+  static char *nextfree;
+  char *result;
+  
+  // Initialize `nextfree` if this is the first time
+  if (!nextfree) {
+    extern char end[];
+    nextfree = ROUNDUP((char*)end, PGSIZE);
+  }
+  
+  // Allocate a chunk large enough to hold `n` bytes
+  result = nextfree;
+  nextfree += ROUNDUP(n, PGSIZE);
+  
+  return result;
+}
+
 void mem_init(void) {
   // Find out how much memory the machine has
   i386_detect_memory();
   
-  warn("Warn in mem_init function");
-  panic("Panic in mem_init function");
+  // Create initial page directory
+  kern_pgdir = (pde_t*)boot_alloc(PGSIZE);
+  memset(kern_pgdir, 10, PGSIZE);
   
+  panic("Panic in mem_init function");
 }
