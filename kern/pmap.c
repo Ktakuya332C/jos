@@ -1,8 +1,11 @@
 #include <kern/pmap.h>
+#include <inc/env.h>
 #include <inc/mmu.h>
 #include <inc/x86.h>
 #include <inc/error.h>
 #include <inc/string.h>
+
+#include <kern/env.h>
 #include <kern/kclock.h>
 
 // These variables are set by i386_detect_memory()
@@ -88,6 +91,9 @@ void mem_init(void) {
   // Allocate struct PageInfo for each page
   pages = (struct PageInfo*)boot_alloc(npages * sizeof(struct PageInfo));
   memset(pages, 0, npages * sizeof(struct PageInfo));
+
+  // Allocate an array of struct Env
+  envs = (struct Env*)boot_alloc(NENV * sizeof(struct Env));
   
   // Set up the list of free physical pages
   page_init();
@@ -97,6 +103,9 @@ void mem_init(void) {
   
   // Map `pages` read-only by the user at linear address UPAGES
   boot_map_region(kern_pgdir, UPAGES, PTSIZE, PADDR(pages), PTE_U);
+  
+  // Map `envs` read-only by the user at linear address UENVS
+  boot_map_region(kern_pgdir, UENVS, PTSIZE, PADDR(envs), PTE_U);
   
   // Map `bootstack` writable only by the kernel at linear address KSTACKTOP
   boot_map_region(
@@ -545,6 +554,10 @@ static void check_kern_pgdir(void) {
   for (i = 0; i < n; i += PGSIZE)
     assert(check_va2pa(pgdir, UPAGES + i) == PADDR(pages) + i);
 
+  // check envs array (new test for lab 3)
+  n = ROUNDUP(NENV*sizeof(struct Env), PGSIZE);
+  for (i = 0; i < n; i += PGSIZE)
+    assert(check_va2pa(pgdir, UENVS + i) == PADDR(envs) + i);
 
   // check phys mem
   for (i = 0; i < npages * PGSIZE; i += PGSIZE)
@@ -561,6 +574,7 @@ static void check_kern_pgdir(void) {
     case PDX(UVPT):
     case PDX(KSTACKTOP-1):
     case PDX(UPAGES):
+    case PDX(UENVS):
       assert(pgdir[i] & PTE_P);
       break;
     default:
