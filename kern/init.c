@@ -21,7 +21,7 @@ void i386_init(void) {
 }
 
 // Variable panicstr contains argument to first call to panic
-const char *panicstr;
+const char *panicstr = NULL;
 
 // Panic is called on unresolvable fatal errors
 // It prints a message and enters the kernel monitor
@@ -30,7 +30,6 @@ void _panic(const char *file, int line, const char *fmt, ...) {
   
   if (panicstr) goto dead;
   panicstr = fmt;
-  
   asm volatile("cli; cld");
   
   va_start(ap, fmt);
