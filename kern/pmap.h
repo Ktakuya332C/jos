@@ -4,8 +4,10 @@
 #include <inc/memlayout.h>
 #include <inc/assert.h>
 
+extern char botstacktop[], bootstack[];
 extern struct PageInfo *pages;
 extern size_t npages;
+extern pde_t *kern_pgdir;
 
 // This macro takes a kernel virtual address
 // and returns the corresponding physical address
@@ -34,6 +36,14 @@ enum {
 
 void mem_init(void);
 void page_init(void);
+struct PageInfo* page_alloc(int alloc_flags);
+void page_free(struct PageInfo *pp);
+int page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm);
+void page_remove(pde_t *pgdir, void *va);
+struct PageInfo *page_lookup(pde_t *pgdir, void *va, pte_t **pte_store);
+void page_decref(struct PageInfo *pp);
+void tlb_invalidate(pde_t *pgdir, void *va);
+pte_t *pgdir_walk(pde_t *pgdir, const void *va, int create);
 
 static inline physaddr_t page2pa(struct PageInfo *pp) {
   return (pp - pages) << PGSHIFT;
