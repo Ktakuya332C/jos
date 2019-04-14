@@ -22,4 +22,8 @@ static inline void outb(int port, uint8_t data) {
   asm volatile("outb %0, %w1" : : "a" (data), "d" (port));
 }
 
+static inline void invlpg(void *addr) {
+  asm volatile("invlpg (%0)" : : "r"(addr) : "memory");
+}
+
 #endif // INC_X86_H
