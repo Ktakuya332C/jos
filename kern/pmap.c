@@ -94,6 +94,7 @@ void mem_init(void) {
 
   // Allocate an array of struct Env
   envs = (struct Env*)boot_alloc(NENV * sizeof(struct Env));
+  memset(envs, 0, NENV * sizeof(struct Env));
   
   // Set up the list of free physical pages
   page_init();
