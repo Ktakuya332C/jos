@@ -108,7 +108,18 @@ void mem_init(void) {
   boot_map_region(kern_pgdir, KERNBASE, -KERNBASE, 0, PTE_W);
   check_kern_pgdir();
   
-  panic("Panic in mem_init function");
+  // Switch from the minimal entry page directory to the full kern_pgdir
+  lcr3(PADDR(kern_pgdir));
+  check_page_free_list(0);
+  
+  // Reset cr0 bit flags
+  uint32_t cr0 = rcr0();
+  cr0 |= CR0_PE|CR0_PG|CR0_AM|CR0_WP|CR0_NE|CR0_MP;
+  cr0 &= ~(CR0_TS|CR0_EM);
+  lcr0(cr0);
+  
+  // Some more checks
+  check_page_installed_pgdir();
 }
 
 // Initialize page structure and memory free list
