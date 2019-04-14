@@ -40,7 +40,7 @@ static inline void lcr3(uint32_t val) {
   asm volatile("movl %0,%%cr3" : : "r" (val));
 }
 
-static inline void uint32_t rcr3(void) {
+static inline uint32_t rcr3(void) {
   uint32_t val;
   asm volatile("movl %%cr3,%0" : "=r" (val));
   return val;
