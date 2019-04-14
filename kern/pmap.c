@@ -47,9 +47,13 @@ static void i386_detect_memory(void) {
 
 /**** Set up memory mappings above UTOP ****/
 
+static void boot_map_region(
+    pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm);
 static void check_page_free_list(bool only_low_memory);
 static void check_page_alloc(void);
 static void check_page(void);
+static void check_kern_pgdir(void);
+static void check_page_installed_pgdir(void);
 
 // Simple physical memory allocator used
 // only while JOS is setting up its virtual memory system
@@ -91,6 +95,19 @@ void mem_init(void) {
   check_page_alloc();
   check_page();
   
+  // Map `pages` read-only by the user at linear address UPAGES
+  boot_map_region(kern_pgdir, UPAGES, PTSIZE, PADDR(pages), PTE_U);
+  
+  // Map `bootstack` writable only by the kernel at linear address KSTACKTOP
+  boot_map_region(
+      kern_pgdir, KSTACKTOP-KSTKSIZE, KSTKSIZE, PADDR(bootstack), PTE_W);
+  
+  // Map virtual adresses [KERNBASE, 2**32)
+  // to physical address [0, 2**32 - KERNBASE]
+  // writable only by the kernel
+  boot_map_region(kern_pgdir, KERNBASE, -KERNBASE, 0, PTE_W);
+  check_kern_pgdir();
+  
   panic("Panic in mem_init function");
 }
 
@@ -120,6 +137,7 @@ struct PageInfo* page_alloc(int alloc_flag) {
   if (page_free_list) {
     struct PageInfo *ret = page_free_list;
     page_free_list = page_free_list->pp_link;
+    ret->pp_link = NULL;
     if (alloc_flag & ALLOC_ZERO) memset(page2kva(ret), 0, PGSIZE);
     return ret;
   } else {
@@ -147,7 +165,9 @@ pde_t* pgdir_walk(pde_t *pgdir, const void *va, int create) {
       return NULL;
     }
   }
-  return KADDR(PTE_ADDR(pgdir[dindex])) + PTX(va);
+  pte_t *p = KADDR(PTE_ADDR(pgdir[dindex]));
+  int tindex = PTX(va);
+  return p + tindex;
 }
 
 // Map [va, va+size) of virtual address space
@@ -342,13 +362,14 @@ static void check_page_alloc(void) {
 // This function returns the physical address of the page containing `va`
 static physaddr_t check_va2pa(pde_t *pgdir, uintptr_t va) {
   pte_t *p;
-
   pgdir = &pgdir[PDX(va)];
-  if (!(*pgdir & PTE_P))
+  if (!(*pgdir & PTE_P)) {
     return ~0;
+  }
   p = (pte_t*) KADDR(PTE_ADDR(*pgdir));
-  if (!(p[PTX(va)] & PTE_P))
+  if (!(p[PTX(va)] & PTE_P)) {
     return ~0;
+  }
   return PTE_ADDR(p[PTX(va)]);
 }
 
@@ -498,4 +519,80 @@ static void check_page(void) {
   page_free(pp0);
   page_free(pp1);
   page_free(pp2);
+}
+
+// Checks the kernel part of virtual address space
+// has been set up roughly correctly
+static void check_kern_pgdir(void) {
+  uint32_t i, n;
+  pde_t *pgdir;
+
+  pgdir = kern_pgdir;
+
+  // check pages array
+  n = ROUNDUP(npages*sizeof(struct PageInfo), PGSIZE);
+  for (i = 0; i < n; i += PGSIZE)
+    assert(check_va2pa(pgdir, UPAGES + i) == PADDR(pages) + i);
+
+
+  // check phys mem
+  for (i = 0; i < npages * PGSIZE; i += PGSIZE)
+    assert(check_va2pa(pgdir, KERNBASE + i) == i);
+
+  // check kernel stack
+  for (i = 0; i < KSTKSIZE; i += PGSIZE)
+    assert(check_va2pa(pgdir, KSTACKTOP - KSTKSIZE + i) == PADDR(bootstack) + i);
+  assert(check_va2pa(pgdir, KSTACKTOP - PTSIZE) == ~0);
+
+  // check PDE permissions
+  for (i = 0; i < NPDENTRIES; i++) {
+    switch (i) {
+    case PDX(UVPT):
+    case PDX(KSTACKTOP-1):
+    case PDX(UPAGES):
+      assert(pgdir[i] & PTE_P);
+      break;
+    default:
+      if (i >= PDX(KERNBASE)) {
+        assert(pgdir[i] & PTE_P);
+        assert(pgdir[i] & PTE_W);
+      } else
+        assert(pgdir[i] == 0);
+      break;
+    }
+  }
+}
+
+// Check page_insert, page_remove, &c, with an installed kern_pgdir
+static void check_page_installed_pgdir(void) {
+  struct PageInfo *pp0, *pp1, *pp2;
+
+  // check that we can read and write installed pages
+  pp1 = pp2 = 0;
+  assert((pp0 = page_alloc(0)));
+  assert((pp1 = page_alloc(0)));
+  assert((pp2 = page_alloc(0)));
+  page_free(pp0);
+  memset(page2kva(pp1), 1, PGSIZE);
+  memset(page2kva(pp2), 2, PGSIZE);
+  page_insert(kern_pgdir, pp1, (void*) PGSIZE, PTE_W);
+  assert(pp1->pp_ref == 1);
+  assert(*(uint32_t *)PGSIZE == 0x01010101U);
+  page_insert(kern_pgdir, pp2, (void*) PGSIZE, PTE_W);
+  assert(*(uint32_t *)PGSIZE == 0x02020202U);
+  assert(pp2->pp_ref == 1);
+  assert(pp1->pp_ref == 0);
+  *(uint32_t *)PGSIZE = 0x03030303U;
+  assert(*(uint32_t *)page2kva(pp2) == 0x03030303U);
+  page_remove(kern_pgdir, (void*) PGSIZE);
+  assert(pp2->pp_ref == 0);
+
+  // forcibly take pp0 back
+  assert(PTE_ADDR(kern_pgdir[0]) == page2pa(pp0));
+  kern_pgdir[0] = 0;
+  assert(pp0->pp_ref == 1);
+  pp0->pp_ref = 0;
+
+  // free the pages we took
+  page_free(pp0);
 }
