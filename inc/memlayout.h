@@ -31,6 +31,7 @@
 #define MMIOLIM (KSTACKTOP - PTSIZE)
 #define MMIOBASE (MMIOLIM - PTSIZE)
 
+// User environment have no permission to any of the memory above ULIM
 #define ULIM (MMIOBASE)
 #define UVPT (ULIM - PTSIZE) // User read-only virtual page table
 #define UPAGES (UVPT - PTSIZE) // Read-only copies of the Page structures
