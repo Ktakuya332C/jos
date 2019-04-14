@@ -27,6 +27,11 @@ static inline void* _kaddr(const char *file, int line, physaddr_t pa) {
   return (void*)(pa + KERNBASE);
 }
 
+enum {
+  // For page_alloc, zero the returned physical page
+  ALLOC_ZERO = 1<<0
+};
+
 void mem_init(void);
 void page_init(void);
 

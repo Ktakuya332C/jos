@@ -46,6 +46,7 @@ static void i386_detect_memory(void) {
 /**** Set up memory mappings above UTOP ****/
 
 static void check_page_free_list(bool only_low_memory);
+static void check_page_alloc(void);
 
 // Simple physical memory allocator used
 // only while JOS is setting up its virtual memory system
@@ -84,6 +85,7 @@ void mem_init(void) {
   // Set up the list of free physical pages
   page_init();
   check_page_free_list(1);
+  check_page_alloc();
   
   panic("Panic in mem_init function");
 }
@@ -107,6 +109,24 @@ void page_init(void) {
     pages[i].pp_link = page_free_list;
     page_free_list = &pages[i];
   }
+}
+
+// Allocates a physical page
+struct PageInfo* page_alloc(int alloc_flag) {
+  if (page_free_list) {
+    struct PageInfo *ret = page_free_list;
+    page_free_list = page_free_list->pp_link;
+    if (alloc_flag & ALLOC_ZERO) memset(page2kva(ret), 0, PGSIZE);
+    return ret;
+  } else {
+    return NULL;
+  }
+}
+
+// Return a page to the free list
+void page_free(struct PageInfo *pp) {
+  pp->pp_link = page_free_list;
+  page_free_list = pp;
 }
 
 /**** Test functions ****/
@@ -164,4 +184,75 @@ static void check_page_free_list(bool only_low_memory) {
   
   assert(nfree_basemem > 0);
   assert(nfree_extmem > 0);
+}
+
+// Check page_alloc, page_free, page_init
+static void check_page_alloc(void) {
+  struct PageInfo *pp, *pp0, *pp1, *pp2;
+  int nfree;
+  struct PageInfo *fl;
+  char *c;
+  int i;
+
+  if (!pages)
+    panic("'pages' is a null pointer!");
+
+  // check number of free pages
+  for (pp = page_free_list, nfree = 0; pp; pp = pp->pp_link)
+    ++nfree;
+
+  // should be able to allocate three pages
+  pp0 = pp1 = pp2 = 0;
+  assert((pp0 = page_alloc(0)));
+  assert((pp1 = page_alloc(0)));
+  assert((pp2 = page_alloc(0)));
+
+  assert(pp0);
+  assert(pp1 && pp1 != pp0);
+  assert(pp2 && pp2 != pp1 && pp2 != pp0);
+  assert(page2pa(pp0) < npages*PGSIZE);
+  assert(page2pa(pp1) < npages*PGSIZE);
+  assert(page2pa(pp2) < npages*PGSIZE);
+
+  // temporarily steal the rest of the free pages
+  fl = page_free_list;
+  page_free_list = 0;
+
+  // should be no free memory
+  assert(!page_alloc(0));
+
+  // free and re-allocate?
+  page_free(pp0);
+  page_free(pp1);
+  page_free(pp2);
+  pp0 = pp1 = pp2 = 0;
+  assert((pp0 = page_alloc(0)));
+  assert((pp1 = page_alloc(0)));
+  assert((pp2 = page_alloc(0)));
+  assert(pp0);
+  assert(pp1 && pp1 != pp0);
+  assert(pp2 && pp2 != pp1 && pp2 != pp0);
+  assert(!page_alloc(0));
+
+  // test flags
+  memset(page2kva(pp0), 1, PGSIZE);
+  page_free(pp0);
+  assert((pp = page_alloc(ALLOC_ZERO)));
+  assert(pp && pp0 == pp);
+  c = page2kva(pp);
+  for (i = 0; i < PGSIZE; i++)
+    assert(c[i] == 0);
+
+  // give free list back
+  page_free_list = fl;
+
+  // free the pages we took
+  page_free(pp0);
+  page_free(pp1);
+  page_free(pp2);
+
+  // number of free pages should be the same
+  for (pp = page_free_list; pp; pp = pp->pp_link)
+    --nfree;
+  assert(nfree == 0);
 }
